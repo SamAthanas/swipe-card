@@ -203,6 +203,7 @@ class SwipeCard extends LitElement {
     );
 
     this._cards = await this._cardPromises;
+    this._cards = this.sortCards(this._cards);
     if (this._ro) {
       this._cards.forEach((card) => {
         this._ro.observe(card);
@@ -213,8 +214,28 @@ class SwipeCard extends LitElement {
     }
   }
 
+  sortCards(cards) {
+    return cards.sort((a, b) => {
+      const aEval = a.cardConfig.sort && !!eval(a.cardConfig.sort);
+      const bEval = b.cardConfig.sort && !!eval(b.cardConfig.sort);
+
+      if (aEval == bEval) {
+        return 0;
+      }
+
+      if (aEval && !bEval) {
+        return -1;
+      }
+
+      return 1;
+    });
+  }
+
   async _createCardElement(cardConfig) {
-    const element = (await HELPERS).createCardElement(cardConfig);
+    const dupConfig = { ...cardConfig };
+    delete dupConfig.sort;
+    const element = (await HELPERS).createCardElement(dupConfig);
+    element.cardConfig = cardConfig;
     element.className = "swiper-slide";
     if ("card_width" in this._config) {
       element.style.width = this._config.card_width;
@@ -274,7 +295,7 @@ class SwipeCard extends LitElement {
   }
 }
 
-customElements.define("swipe-card", SwipeCard);
+customElements.define("swipe-card-sort", SwipeCard);
 console.info(
   "%c   SWIPE-CARD  \n%c Version 5.0.0 ",
   "color: orange; font-weight: bold; background: black",
