@@ -58,20 +58,31 @@ class SwipeCard extends LitElement {
       throw new Error("Card config incorrect");
     }
     this._config = config;
-    this._parameters = deepcopy(this._config.parameters) || {};
-    this._cards = [];
-    if (window.ResizeObserver) {
-      this._ro = new ResizeObserver(() => {
-        if (this.swiper) {
-          this.swiper.update();
-        }
-      });
-    }
-    this._createCards();
+    this.ready = true;
   }
 
   set hass(hass) {
     this._hass = hass;
+
+    if (this.ready) {
+      if (this._config.parameters?.effectParam) {
+        this._config.parameters.effect = eval(
+          this._config.parameters?.effectParam
+        );
+      }
+      this._parameters = deepcopy(this._config.parameters) || {};
+      this._cards = [];
+      if (window.ResizeObserver) {
+        this._ro = new ResizeObserver(() => {
+          if (this.swiper) {
+            this.swiper.update();
+          }
+        });
+      }
+      this._createCards();
+
+      this.ready = false;
+    }
 
     if (!this._cards) {
       return;
